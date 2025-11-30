@@ -1,6 +1,6 @@
-from db import Neo4jConnection
+from database import Neo4jConnection
 
-class User:
+class UserService:
     def __init__(self, conn):
         self.conn = conn
 
