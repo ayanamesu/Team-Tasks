@@ -1,19 +1,20 @@
 import csv
 import random
 from database import Neo4jConnection
-from user import UserService
+from user import UserService  
+
 
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "password"   # change this to your real password
+NEO4J_PASSWORD = "password"   # You need to change this to your real password on neo4j. You can use the same as mine if you want but your URI might be different.
 
 
 # ===============================
-# LOAD USERS FROM KAGGLE CSV
+# This loads the users from the csv
 # ===============================
 def load_users_from_csv(path, conn):
     """
-    Reads the Kaggle CSV and creates User nodes.
+    This Reads the Kaggle CSV and creates User nodes.
     Assumes there is a 'screenName' column in the CSV.
     """
     with open(path, newline="", encoding="utf-8") as f:
@@ -37,7 +38,7 @@ def load_users_from_csv(path, conn):
 
 
 # ===============================
-# GENERATE SYNTHETIC FOLLOW EDGES
+# This generates synthetic FOLLOWS edges which is random users following each others
 # ===============================
 def generate_edges(conn, total_edges=5000):
     """
@@ -89,17 +90,16 @@ def user_menu(username):
 
 def main():
     conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-    user_service = UserService(conn)
+    user_service = UserService(conn)   # <-- correct
     logged_in = None
 
     # ================================================
-    # 1) IMPORT KAGGLE USERS + GENERATE EDGES ONCE
-    #    - change "data.csv" to your actual file name
-    #    - UNCOMMENT these two lines and run once
-    #    - then COMMENT them again so it doesn't re-import
+    # THIS IMPORT KAGGLE USERS + GENERATE EDGES ONE TIME
+    # ONLY UNCOMMENT these two lines once to run the import,
+    # then COMMENT them again afterward.
     # ================================================
-    # load_users_from_csv("data.csv", conn)
-    # generate_edges(conn, total_edges=10000)
+    #load_users_from_csv("data.csv", conn)
+    #generate_edges(conn, total_edges=10000)
     # ================================================
 
     try:
