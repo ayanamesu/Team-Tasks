@@ -32,6 +32,7 @@ def load_users_from_csv(path, conn):
                 u.bio = ""
             """
             conn.execute_write(query, username=username)
+            print(f"merge {username} successful")
             count += 1
 
     print(f"Users imported from {path}: {count}")
@@ -85,14 +86,19 @@ def user_menu(username):
     print(f"\n===== Logged in as {username} =====")
     print("1. View Profile")
     print("2. Edit Profile")
-    print("3. Logout")
+    print("3. Follow User")
+    print("4. Unfollow User")
+    print("5. Check Following")
+    print("6. Check Followers")
+    print("7. Check Mutuals")
+    print("8. Logout")
 
 
 def main():
     conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
     user_service = UserService(conn)   # <-- correct
     logged_in = None
-
+    print("Connection succesful")
     # ================================================
     # THIS IMPORT KAGGLE USERS + GENERATE EDGES ONE TIME
     # ONLY UNCOMMENT these two lines once to run the import,
@@ -101,7 +107,7 @@ def main():
     #load_users_from_csv("data.csv", conn)
     #generate_edges(conn, total_edges=10000)
     # ================================================
-
+    print("data loaded")
     try:
         while True:
             if not logged_in:
@@ -150,7 +156,34 @@ def main():
                     print("Updated:", updated)
 
                 elif choice == "3":
+                    follow = input("Enter username of user to follow: ")
+                    if follow == "":
+                        follow = None
+
+                    followed = user_service.follow_user(logged_in, follow)
+                    print(followed)
+
+                elif choice == "4":
+                    unfollow = input("Enter username of user to unfollow: ")
+                    if unfollow == "":
+                        unfollow = None
+
+                    unfollowed = user_service.unfollow_user(logged_in, unfollow)
+                    print(unfollowed)
+
+                elif choice == "5":
+                    print(user_service.check_following(logged_in))
+
+                elif choice == "6":
+                    print(user_service.check_followers(logged_in))
+
+                elif choice == "7":
+                    print(user_service.check_mutuals(logged_in))
+
+                elif choice == "8":
                     logged_in = None
+
+
 
     finally:
         conn.close()

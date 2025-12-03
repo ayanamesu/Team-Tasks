@@ -94,3 +94,82 @@ class UserService:
         node = records[0]["u"]
         return dict(node)
 
+    def follow_user(self, current_user, target_user):
+
+        query = """
+        MATCH (current_user:User {username: $current_user})
+        MATCH (target_user:User {username: $target_user})
+        MERGE (current_user)-[:FOLLOWS]->(target_user)
+        RETURN current_user, target_user
+        """
+
+        result = self.conn.execute_write(query, current_user=current_user, target_user=target_user)
+
+        if not result:
+            return f"Error: could not find user {target_user}"
+
+        return f"Succesfully followed {target_user}"
+
+    def unfollow_user(self, current_user, target_user):
+
+        query = """
+           MATCH (current_user:User {username: $current_user})
+           MATCH (target_user:User {username: $target_user})
+           MATCH (current_user)-[r:FOLLOWS]->(target_user)
+           DELETE r
+           RETURN current_user, target_user
+           """
+
+        result = self.conn.execute_write(query, current_user=current_user, target_user=target_user)
+
+        if not result:
+            return f"Error: could not find user {target_user}"
+
+        return f"Succesfully unfollowed {target_user}"
+
+    def check_following(self, username):
+        query = """
+                MATCH (u:User {username: $username})
+                MATCH (u)-[:FOLLOWS]->(follower:User)
+                RETURN follower.username AS username
+                """
+        result = self.conn.execute_read(query, username=username)
+
+        if not result:
+            return None
+
+        following = [record["username"] for record in result]
+        return following
+
+    def check_followers(self, username):
+        query = """
+        MATCH (u:User {username: $username})
+        MATCH (u)<-[:FOLLOWS]-(follower:User)
+        RETURN follower.username AS username
+        """
+        result = self.conn.execute_read(query, username=username)
+
+        if not result:
+            return None
+
+        followers = [record["username"] for record in result]
+        return followers
+
+    def check_mutuals(self, username):
+        query = """
+           MATCH (u:User {username: $username})
+           MATCH (mutual:User)
+           WHERE (mutual)-[:FOLLOWS]->(u) 
+           AND (u)-[:FOLLOWS]->(mutual) 
+           RETURN mutual.username AS username
+           """
+        result = self.conn.execute_read(query, username=username)
+
+        if not result:
+            return None
+
+        mutuals = [record["username"] for record in result]
+        return mutuals
+
+
+
