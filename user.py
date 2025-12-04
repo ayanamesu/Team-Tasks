@@ -170,6 +170,43 @@ class UserService:
 
         mutuals = [record["username"] for record in result]
         return mutuals
+    #UC 9
+    def get_recommendations(self, username, limit=10):
+        query = """
+        MATCH (u:User {username: $username})-[:FOLLOWS]->(friend)-[:FOLLOWS]->(recommended)
+        WHERE recommended <> u
+        AND NOT (u)-[:FOLLOWS]->(recommended)
+        RETURN recommended.username AS username, COUNT(friend) as mutual_count
+        ORDER BY mutual_count DESC
+        LIMIT $limit
+        """
+
+        result = self.conn.execute_read(query, username=username, limit=limit)
+        return [(r["username"], r["mutual_count"]) for r in result]
+    #UC 10
+    def search_users(self, search_term):
+        query = """
+        MATCH (u:User)
+        WHERE toLower(u.username) CONTAINS toLower($search_term)
+            OR toLower(u.name) CONTAINS toLower($search_term)
+        RETURN u.username AS username, u.name AS name
+        LIMIT 20
+        """
+
+        result = self.conn.execute_read(query, search_term=search_term)
+        return [(r["username"], r["name"]) for r in result]
+    
+    #UC 11
+    def get_popular_users(self, limit=10):
+        query = """
+        MATCH (u:User)<-[f:FOLLOWS]-()
+        RETURN u.username AS username, u.name AS name, COUNT(f) AS follower_count
+        ORDER BY follower_count DESC
+        LIMIT $limit
+        """
+
+        result = self.conn.execute_read(query, limit=limit)
+        return [(r["username"], r["name"], r["follower_count"]) for r in result]
 
 
 

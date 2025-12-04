@@ -91,8 +91,10 @@ def user_menu(username):
     print("5. Check Following")
     print("6. Check Followers")
     print("7. Check Mutuals")
-    print("8. Logout")
-
+    print("8. Friend Recommendations")
+    print("9. Search Users")
+    print("10. Explore Popular Users")
+    print("11. Logout")
 
 def main():
     conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
@@ -181,6 +183,29 @@ def main():
                     print(user_service.check_mutuals(logged_in))
 
                 elif choice == "8":
+                    recs = user_service.get_recommendations(logged_in)
+                    if recs:
+                        print("Recommended Users to follow:")
+                        for username, mutual_count in recs:
+                            print(f" @{username} ({mutual_count} mutual connections)")
+                    else:
+                        print("No recommendations.")
+                
+                elif choice == "9":
+                    term = input("Search for: ")
+                    results = user_service.search_users(term)
+                    if results:
+                        for username, name in results:
+                            print(f" @{username} - {name}")
+                    else:
+                        print("No users found")
+                elif choice == "10":
+                    popular = user_service.get_popular_users()
+                    print("Most popular users:")
+                    for i, (username, name, count) in enumerate(popular, 1):
+                        print(f" {i}. @{username} ({name}) - {count} followers")
+
+                elif choice == "11":
                     logged_in = None
 
 
